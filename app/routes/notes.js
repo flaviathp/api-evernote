@@ -23,4 +23,36 @@ router.post('/', withAuth, async(req, res) => {
 
 // #endregion
 
+// #region Baixar nota
+router.get('/:id', withAuth, async(req, res) => {
+    try {
+        // retorna o id dos parâmetros da url
+        const { id } = req.params;
+        // localiza a nota
+        let note = await Note.findById(id);
+        if(isOwner(req.user, note)) {
+            res.json(note);
+        } else {
+            res.status(403).json({ error: 'Permission denied' });
+        }
+    } catch {
+        res.status(500).json({ error: 'Problem to get a note' });
+    }
+});
+
+// #endregion
+
+// #region Método isOwner
+// verifica se o autor e o usuário são os mesmos
+const isOwner = (user, note) => {
+    // converte os dados em string e compara se são iguais
+    if (JSON.stringify(user._id) == JSON.stringify(note.author._id)) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+// #endregion
+
 module.exports = router;
