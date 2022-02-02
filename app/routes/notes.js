@@ -42,6 +42,19 @@ router.get('/:id', withAuth, async(req, res) => {
 
 // #endregion
 
+// #region Baixar lista de notas
+router.get('/', withAuth, async(req, res) => {
+    try {
+        // localiza as notas de um mesmo autor
+        let notes = await Note.find({ author: req.user._id });
+        res.json(notes);
+    } catch {
+        res.json({ error: error }).status(500);
+    }
+});
+
+// #endregion
+
 // #region Atualizar nota
 router.put('/:id', withAuth, async(req, res) => {
     // retorna o title e o body da requisição
