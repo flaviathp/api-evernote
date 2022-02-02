@@ -42,6 +42,32 @@ router.get('/:id', withAuth, async(req, res) => {
 
 // #endregion
 
+// #region Atualizar nota
+router.put('/:id', withAuth, async(req, res) => {
+    // retorna o title e o body da requisição
+    const { title, body } = req.body;
+    // retorna o id dos parâmetros da url
+    const { id } = req.params;
+
+    try {
+        // localiza as notas de um mesmo autor
+        let note = await Note.findById(id);
+        if (isOwner(req.user, note)) {
+            let note = await Note.findOneAndUpdate(id,
+                { $set: { title: title, body: body }},
+                { upsert: true, 'new': true }
+            );
+            res.json(note);
+        } else {
+            res.status(403).json({ error: 'Permission denied' });  
+        }
+    } catch {
+        res.status(500).json({ error: 'Problem to update a note' });
+    }
+});
+
+// #endregion
+
 // #region Método isOwner
 // verifica se o autor e o usuário são os mesmos
 const isOwner = (user, note) => {
