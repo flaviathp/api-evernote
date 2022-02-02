@@ -15,4 +15,7 @@ let noteSchema = new mongoose.Schema({
     }
 });
 
+// cria um index para pesquisa
+noteSchema.index({ 'title': 'text', 'body': 'text' });
+
 module.exports = mongoose.model('Note', noteSchema);

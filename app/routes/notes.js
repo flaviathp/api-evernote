@@ -23,6 +23,25 @@ router.post('/', withAuth, async(req, res) => {
 
 // #endregion
 
+// #region Pesquisar nota
+router.get('/search', withAuth, async(req, res) => {
+    // retorna um dos parâmetros da requisição
+    const { query } = req.query;
+
+    try {
+        let notes = await Note
+            // busca pelo autor
+            .find({ author: req.user._id })
+            // dentro do resultado anterior busca em todos os campos indexados como text
+            .find({ $text: { $search: query }});
+        res.json(notes);
+    } catch {
+        res.json({ error: error }).status(500);
+    }
+});
+
+// #endregion
+
 // #region Baixar nota
 router.get('/:id', withAuth, async(req, res) => {
     try {
