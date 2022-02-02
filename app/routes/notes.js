@@ -68,6 +68,29 @@ router.put('/:id', withAuth, async(req, res) => {
 
 // #endregion
 
+// #region Deletar notas 
+
+router.delete('/:id', withAuth, async (req, res) => {
+    // retorna o id dos parâmetros da url
+    const { id } = req.params;
+
+    try {
+        // localiza as notas de um mesmo autor
+        let note = await Note.findById(id);
+
+        if (isOwner(req.user, note)) {
+            await note.delete();
+            res.json({ message: 'OK'}).status(204);
+        } else {
+            res.status(403).json({ error: 'Permission denied' });  
+        }
+    } catch {
+        res.status(500).json({ error: 'Problem to delete a note' });
+    }
+})
+
+// #endregion
+
 // #region Método isOwner
 // verifica se o autor e o usuário são os mesmos
 const isOwner = (user, note) => {
