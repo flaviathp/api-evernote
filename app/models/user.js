@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 let userSchema = new mongoose.Schema({
     name: String,
@@ -9,5 +10,32 @@ let userSchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now },
     update_at: { type: Date, default: Date.now }
 });
+
+//#region Autenticação
+
+// pre permite que rode um script antes de fazer alterações no banco de dados
+// next é pra seguir para o próximo middleware
+userSchema.pre('save', function(next) {
+    // verifica se a senha é nova ou se foi modificada para então fazer a criptografia
+    if (this.isNew || this.isModified(password)) {
+        const document = this;
+        // o primeiro parâmetro é o valor que vai ser transformado em hash, ou seja, a senha
+        // o segundo é a salt0rRound, o número de caracteres aleatórios que vão ser inseridos para gerar o hash
+        bcrypt.hash(this.password, 10, 
+            (err, hashedPassword) => {
+                // se deu erro, envia o erro para o próximo middleware
+                // senão, envia a senha criptografada para o próximo middleware
+                if (err) {
+                    next(err);
+                } else {
+                    this.password = hashedPassword;
+                    next();
+                }
+            }
+        )
+    }
+});
+
+//#endregion
 
 module.exports = mongoose.model('User', userSchema);
