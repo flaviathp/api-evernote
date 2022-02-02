@@ -38,4 +38,20 @@ userSchema.pre('save', function(next) {
 
 //#endregion
 
+// #region Validação de Usuário
+
+userSchema.methods.isCorrectPassword = function (password, callback) {
+    // método de comparação entre a senha informada e a senha salva
+    // same é caso a validação seja verdadeira
+    bcrypt.compare(password, this.password, function(err, same) {
+        if(err) {
+            callback(err);
+        } else {
+            callback(err, same);
+        }
+    });
+}
+
+// #endregion
+
 module.exports = mongoose.model('User', userSchema);

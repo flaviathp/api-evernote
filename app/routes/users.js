@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+const secret = process.env.JWT_TOKEN;
 
 // #region Registro de usuários
 
@@ -18,6 +21,38 @@ router.post('/register', async(req, res) => {
   } catch (error) {
     // caso dê certo salvar retorna um status de erro e um json com as informoções do usuário
     res.status(500).json({ error: 'Error registring new user' });
+  }
+});
+
+// #endregion
+
+// #region Login
+
+router.post('/login', async(req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // localiza o email
+    let user = await User.findOne({ email });
+    // verifica se o email está cadastrado
+    if(!user) {
+      res.status(401).json({ error: 'Incorrect email or password'});
+    } else {
+      // verifica se a senha está correta
+      user.isCorrectPassword(password, function(err, same) {
+        if(!same) {
+          res.status(401).json({ error: 'Incorrect email or password'});
+        } else {
+          // secret é a const com o token do .env
+          // expireIn é o prazo de validade
+          const token = jwt.sign({ email }, secret, { expiresIn: '1d' });
+          // retorna o usuário e o token
+          res.json({ user: user, token: token });
+        }
+      })
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal error, please try again' });
   }
 });
 
